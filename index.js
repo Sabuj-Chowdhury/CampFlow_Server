@@ -2,6 +2,7 @@ const { MongoClient, ServerApiVersion } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
+const jwt = require("jsonwebtoken");
 const app = express();
 require("dotenv").config();
 const port = process.env.PORT || 8000;
@@ -25,6 +26,15 @@ async function run() {
   try {
     const db = client.db("CampFlowDB");
     const userCollection = db.collection("users");
+
+    // generate jwt token
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
+        expiresIn: "24h",
+      });
+      res.send({ token });
+    });
 
     // user related API's
     //save user data in the db
