@@ -12,6 +12,22 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
+const verifyToken = (req, res, next) => {
+  if (!req.headers.authorization) {
+    return res.status(401).send({ message: "forbidden!" });
+  }
+  const token = req.headers.authorization.split(" ")[1];
+
+  jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "forbidden!" });
+    }
+
+    req.decoded = decoded;
+    next();
+  });
+};
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.i53p4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 const client = new MongoClient(uri, {
@@ -61,7 +77,7 @@ async function run() {
       res.send(result);
     });
 
-    // all camps data
+    // get all camps data
     app.get("/camps", async (req, res) => {
       const result = await campCollection.find().toArray();
       res.send(result);
