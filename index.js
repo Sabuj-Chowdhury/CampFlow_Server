@@ -61,6 +61,12 @@ async function run() {
       res.send(result);
     });
 
+    // all camps data
+    app.get("/camps", async (req, res) => {
+      const result = await campCollection.find().toArray();
+      res.send(result);
+    });
+
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
