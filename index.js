@@ -1,6 +1,7 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
+const morgan = require("morgan");
 const app = express();
 require("dotenv").config();
 const port = process.env.PORT || 8000;
@@ -8,6 +9,7 @@ const port = process.env.PORT || 8000;
 // middleware
 app.use(cors());
 app.use(express.json());
+app.use(morgan("dev"));
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.i53p4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -21,6 +23,25 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+    const db = client.db("CampFlowDB");
+    const userCollection = db.collection("users");
+
+    // user related API's
+    //save user data in the db
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const isExist = await userCollection.findOne(query);
+      if (isExist) {
+        return res.send({ message: "Already exist", insertedId: null });
+      }
+      const result = await userCollection.insertOne({
+        ...user,
+        role: "user",
+        timeStamp: Date.now(),
+      });
+      res.send(result);
+    });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
