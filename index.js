@@ -26,6 +26,7 @@ async function run() {
   try {
     const db = client.db("CampFlowDB");
     const userCollection = db.collection("users");
+    const campCollection = db.collection("campaigns");
 
     // generate jwt token
     app.post("/jwt", async (req, res) => {
@@ -52,6 +53,14 @@ async function run() {
       });
       res.send(result);
     });
+
+    // add camp to db
+    app.post("/add-camp", async (req, res) => {
+      const data = req.body;
+      const result = await campCollection.insertOne(data);
+      res.send(result);
+    });
+
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
