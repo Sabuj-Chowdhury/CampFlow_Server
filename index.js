@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
@@ -106,6 +106,14 @@ async function run() {
     // get all camps data
     app.get("/camps", async (req, res) => {
       const result = await campCollection.find().toArray();
+      res.send(result);
+    });
+
+    // get camp details by id
+    app.get("/camp/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await campCollection.findOne(query);
       res.send(result);
     });
 
