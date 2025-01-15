@@ -1,10 +1,12 @@
+require("dotenv").config();
+
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const jwt = require("jsonwebtoken");
 const app = express();
-require("dotenv").config();
+
 const port = process.env.PORT || 8000;
 
 // middleware
@@ -44,6 +46,7 @@ async function run() {
     const db = client.db("CampFlowDB");
     const userCollection = db.collection("users");
     const campCollection = db.collection("campaigns");
+    const registrationCollection = db.collection("registrations");
 
     // generate jwt token
     app.post("/jwt", async (req, res) => {
@@ -94,6 +97,23 @@ async function run() {
       }
 
       res.send({ admin });
+    });
+
+    // save registration data in registrationCollection and increase count on campCollection
+    app.post("/camp/registration", verifyToken, async (req, res) => {
+      // save data in db
+      const data = req.body;
+      const result = await registrationCollection.insertOne(data);
+
+      // increase count on campCollection
+
+      const query = { _id: new ObjectId(data.registrationId) };
+      const update = {
+        $inc: { count: 1 },
+      };
+      const updateCount = await campCollection.updateOne(query, update);
+
+      res.send(result);
     });
 
     // add camp to db
