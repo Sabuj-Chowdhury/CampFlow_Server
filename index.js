@@ -70,6 +70,19 @@ async function run() {
       res.send(result);
     });
 
+    // check if a user is admin
+    app.get("/user/admin/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await userCollection.findOne(query);
+      let admin = false;
+      if (user) {
+        admin = user?.role === "admin";
+      }
+
+      res.send({ admin });
+    });
+
     // add camp to db
     app.post("/add-camp", async (req, res) => {
       const data = req.body;
