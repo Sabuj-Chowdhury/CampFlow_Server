@@ -129,6 +129,15 @@ async function run() {
       res.send(result);
     });
 
+    // get popular camps for homepage
+    app.get("/camps/popular", async (req, res) => {
+      const sort = {
+        count: -1,
+      };
+      const result = await campCollection.find().sort(sort).limit(6).toArray();
+      res.send(result);
+    });
+
     // get camp details by id
     app.get("/camp/:id", async (req, res) => {
       const id = req.params.id;
