@@ -198,9 +198,17 @@ async function run() {
     });
     // ******************************* PUT/PATCH(END) *******************************************
 
-    // ******************************* GET AGGREGATION(START) *****************************************
+    // ******************************* DELETE(START) *****************************************
 
-    // ******************************* GET AGGREGATION(END) *******************************************
+    // cancel/delete registration
+    app.delete("/registration/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await registrationCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // ******************************* DELETE(END) *******************************************
 
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
@@ -215,5 +223,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`plantNet is running on port ${port}`);
+  console.log(`CampFlow is running on port ${port}`);
 });
