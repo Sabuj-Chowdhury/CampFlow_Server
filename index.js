@@ -169,6 +169,21 @@ async function run() {
     // ******************************* GET(END) *******************************************
 
     // ******************************* PUT/PATCH(START) *******************************************
+
+    // user update
+    app.patch("/user/update/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          name: data.name,
+          image: data.image,
+        },
+      };
+      const result = await userCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
     // ******************************* PUT/PATCH(END) *******************************************
 
     console.log(
