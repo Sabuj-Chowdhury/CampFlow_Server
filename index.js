@@ -43,20 +43,14 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+    // ******************************* DB/COLLECTIONS(START) *******************************************
     const db = client.db("CampFlowDB");
     const userCollection = db.collection("users");
     const campCollection = db.collection("campaigns");
     const registrationCollection = db.collection("registrations");
+    // ******************************* DB/COLLECTIONS(END) *******************************************
 
-    // generate jwt token
-    app.post("/jwt", async (req, res) => {
-      const user = req.body;
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
-        expiresIn: "24h",
-      });
-      res.send({ token });
-    });
-
+    // ******************************* ADMIN MIDDLEWARE(START) *******************************************
     // admin verify
     const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
@@ -68,8 +62,20 @@ async function run() {
       }
       next();
     };
+    // ******************************* ADMIN MIDDLEWARE(END) *******************************************
 
-    // user related API's
+    // ******************************* JWT(START) *******************************************
+    // generate jwt token
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
+        expiresIn: "24h",
+      });
+      res.send({ token });
+    });
+    // ******************************* JWT(END) *******************************************
+
+    // ******************************* POST(START) *******************************************
     //save user data in the db
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -85,6 +91,34 @@ async function run() {
       });
       res.send(result);
     });
+
+    // add camp to db
+    app.post("/add-camp", verifyToken, verifyAdmin, async (req, res) => {
+      const data = req.body;
+      const result = await campCollection.insertOne(data);
+      res.send(result);
+    });
+
+    // save registration data in registrationCollection and increase count on campCollection
+    app.post("/camp/registration", verifyToken, async (req, res) => {
+      // save data in db
+      const data = req.body;
+      const result = await registrationCollection.insertOne(data);
+
+      // increase count on campCollection
+
+      const query = { _id: new ObjectId(data.registrationId) };
+      const update = {
+        $inc: { count: 1 },
+      };
+      const updateCount = await campCollection.updateOne(query, update);
+
+      res.send(result);
+    });
+
+    // ******************************* POST(END) *******************************************
+
+    // ******************************* GET(START) *******************************************
 
     // get user data from db
     app.get("/user/:email", verifyToken, async (req, res) => {
@@ -107,30 +141,7 @@ async function run() {
       res.send({ admin });
     });
 
-    // save registration data in registrationCollection and increase count on campCollection
-    app.post("/camp/registration", verifyToken, async (req, res) => {
-      // save data in db
-      const data = req.body;
-      const result = await registrationCollection.insertOne(data);
-
-      // increase count on campCollection
-
-      const query = { _id: new ObjectId(data.registrationId) };
-      const update = {
-        $inc: { count: 1 },
-      };
-      const updateCount = await campCollection.updateOne(query, update);
-
-      res.send(result);
-    });
-
-    // add camp to db
-    app.post("/add-camp", verifyToken, verifyAdmin, async (req, res) => {
-      const data = req.body;
-      const result = await campCollection.insertOne(data);
-      res.send(result);
-    });
-
+    //  ********CAMP RELATED API*********
     // get all camps data
     app.get("/camps", async (req, res) => {
       const result = await campCollection.find().toArray();
@@ -153,6 +164,12 @@ async function run() {
       const result = await campCollection.findOne(query);
       res.send(result);
     });
+    //  ********CAMP RELATED API*********
+
+    // ******************************* GET(END) *******************************************
+
+    // ******************************* PUT/PATCH(START) *******************************************
+    // ******************************* PUT/PATCH(END) *******************************************
 
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
