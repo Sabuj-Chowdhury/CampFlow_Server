@@ -176,6 +176,14 @@ async function run() {
       const result = await registrationCollection.find(query).toArray();
       res.send(result);
     });
+
+    // registration data by id
+    app.get("/registration/pay/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await registrationCollection.findOne(query);
+      res.send(result);
+    });
     // ******************************* GET(END) *******************************************
 
     // ******************************* PUT/PATCH(START) *******************************************
@@ -200,6 +208,7 @@ async function run() {
 
     // ******************************* DELETE(START) *****************************************
 
+    // ********REGISTRATION RELATED API'S************
     // cancel/delete registration
     app.delete("/registration/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
