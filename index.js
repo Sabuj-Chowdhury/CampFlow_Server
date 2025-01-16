@@ -170,7 +170,7 @@ async function run() {
 
     // ******************************* PUT/PATCH(START) *******************************************
 
-    // user update
+    // user update by id
     app.patch("/user/update/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const data = req.body;
@@ -179,6 +179,8 @@ async function run() {
         $set: {
           name: data.name,
           image: data.image,
+          address: data.address,
+          phone: data.phone,
         },
       };
       const result = await userCollection.updateOne(query, updateDoc);
