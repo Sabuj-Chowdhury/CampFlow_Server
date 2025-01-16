@@ -103,10 +103,11 @@ async function run() {
     app.post("/camp/registration", verifyToken, async (req, res) => {
       // save data in db
       const data = req.body;
-      const result = await registrationCollection.insertOne(data);
-
+      const result = await registrationCollection.insertOne({
+        ...data,
+        timeStamp: Date.now(),
+      });
       // increase count on campCollection
-
       const query = { _id: new ObjectId(data.registrationId) };
       const update = {
         $inc: { count: 1 },
@@ -120,6 +121,7 @@ async function run() {
 
     // ******************************* GET(START) *******************************************
 
+    //  ********USER RELATED API*********
     // get user data from db
     app.get("/user/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
@@ -164,8 +166,16 @@ async function run() {
       const result = await campCollection.findOne(query);
       res.send(result);
     });
-    //  ********CAMP RELATED API*********
 
+    //  ********Registration RELATED API*********
+
+    // TEMPORARY
+    app.get("/registration/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      const query = { "participant.email": email };
+      const result = await registrationCollection.find(query).toArray();
+      res.send(result);
+    });
     // ******************************* GET(END) *******************************************
 
     // ******************************* PUT/PATCH(START) *******************************************
@@ -187,6 +197,10 @@ async function run() {
       res.send(result);
     });
     // ******************************* PUT/PATCH(END) *******************************************
+
+    // ******************************* GET AGGREGATION(START) *****************************************
+
+    // ******************************* GET AGGREGATION(END) *******************************************
 
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
