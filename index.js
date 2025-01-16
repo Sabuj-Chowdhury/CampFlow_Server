@@ -86,6 +86,14 @@ async function run() {
       res.send(result);
     });
 
+    // get user data from db
+    app.get("/user/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    });
+
     // check if a user is admin
     app.get("/user/admin/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
