@@ -127,13 +127,13 @@ async function run() {
       const result = await paymentCollection.insertOne(data);
 
       // update payment status in registration collection
-      // const query = { _id: new ObjectId(data.registrationId) };
-      // const updateDoc = {
-      //   $set: {
-      //     payment_status: "paid",
-      //   },
-      // };
-      // const update = await registrationCollection.updateOne(query, updateDoc);
+      const query = { _id: new ObjectId(data?.registrationId) };
+      const updateDoc = {
+        $set: {
+          payment_status: "paid",
+        },
+      };
+      const update = await registrationCollection.updateOne(query, updateDoc);
       res.send(result);
     });
 
