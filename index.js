@@ -50,6 +50,7 @@ async function run() {
     const userCollection = db.collection("users");
     const campCollection = db.collection("campaigns");
     const registrationCollection = db.collection("registrations");
+    const paymentCollection = db.collection("payments");
     // ******************************* DB/COLLECTIONS(END) *******************************************
 
     // ******************************* ADMIN MIDDLEWARE(START) *******************************************
@@ -117,6 +118,22 @@ async function run() {
       };
       const updateCount = await campCollection.updateOne(query, update);
 
+      res.send(result);
+    });
+
+    // payment collection related api
+    app.post("/payments", verifyToken, async (req, res) => {
+      const data = req.body;
+      const result = await paymentCollection.insertOne(data);
+
+      // update payment status in registration collection
+      // const query = { _id: new ObjectId(data.registrationId) };
+      // const updateDoc = {
+      //   $set: {
+      //     payment_status: "paid",
+      //   },
+      // };
+      // const update = await registrationCollection.updateOne(query, updateDoc);
       res.send(result);
     });
 
@@ -211,6 +228,7 @@ async function run() {
       const result = await registrationCollection.findOne(query);
       res.send(result);
     });
+
     // ******************************* GET(END) *******************************************
 
     // ******************************* PUT/PATCH(START) *******************************************
