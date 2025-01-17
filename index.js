@@ -229,6 +229,13 @@ async function run() {
       res.send(result);
     });
 
+    // get payment history
+    app.get("/payments/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      const query = { "participant.email": email };
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    });
     // ******************************* GET(END) *******************************************
 
     // ******************************* PUT/PATCH(START) *******************************************
