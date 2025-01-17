@@ -4,8 +4,10 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
+
 const jwt = require("jsonwebtoken");
 const app = express();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const port = process.env.PORT || 8000;
 
@@ -76,6 +78,7 @@ async function run() {
     // ******************************* JWT(END) *******************************************
 
     // ******************************* POST(START) *******************************************
+
     //save user data in the db
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -115,6 +118,30 @@ async function run() {
       const updateCount = await campCollection.updateOne(query, update);
 
       res.send(result);
+    });
+
+    // *******STRIPE RELATED API'S*********
+    // create payment intent
+    app.post("/payment-intent", verifyToken, async (req, res) => {
+      const data = req.body;
+
+      const query = { _id: new ObjectId(data.campId) };
+      const camp = await campCollection.findOne(query);
+      let totalPrice;
+      if (camp) {
+        totalPrice = camp.price * 100; //price in cent's
+        const { client_secret } = await stripe.paymentIntents.create({
+          amount: totalPrice,
+          currency: "usd",
+          automatic_payment_methods: {
+            enabled: true,
+          },
+        });
+        res.send({ client_secret });
+      }
+
+      // const totalPrice = data.price * 100; //price in cent's
+      // console.log(totalPrice);
     });
 
     // ******************************* POST(END) *******************************************
