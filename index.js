@@ -251,6 +251,12 @@ async function run() {
       const result = await paymentCollection.find(query).toArray();
       res.send(result);
     });
+
+    // *******REVIEWS********
+    app.get("/reviews", async (req, res) => {
+      const result = await reviewCollection.find().toArray();
+      res.send(result);
+    });
     // ******************************* GET(END) *******************************************
 
     // ******************************* PUT/PATCH(START) *******************************************
