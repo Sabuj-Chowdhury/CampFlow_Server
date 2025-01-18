@@ -213,6 +213,12 @@ async function run() {
 
     //  ********Registration RELATED API*********
 
+    // get all registration data
+    app.get("/registrations", verifyToken, verifyAdmin, async (req, res) => {
+      const result = await registrationCollection.find().toArray();
+      res.send(result);
+    });
+
     // TEMPORARY
     app.get("/registration/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
