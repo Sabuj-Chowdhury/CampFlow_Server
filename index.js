@@ -112,7 +112,7 @@ async function run() {
         timeStamp: Date.now(),
       });
       // increase count on campCollection
-      const query = { _id: new ObjectId(data.registrationId) };
+      const query = { _id: new ObjectId(data.campId) };
       const update = {
         $inc: { count: 1 },
       };
@@ -277,6 +277,38 @@ async function run() {
       const result = await campCollection.updateOne(query, update, options);
       res.send(result);
     });
+
+    //  ********Registration RELATED API*********
+    app.patch(
+      "/registration/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const updateDoc = { $set: { status: "confirmed" } };
+        const result = await registrationCollection.updateOne(query, updateDoc);
+
+        // update in payment collection as well
+        // console.log(id);
+        const filter = {
+          registrationId: id,
+        };
+        const updateStatus = {
+          $set: {
+            status: "confirmed",
+          },
+        };
+
+        //
+        const paymentConfirm = await paymentCollection.updateOne(
+          filter,
+          updateStatus
+        );
+
+        res.send(result);
+      }
+    );
 
     // ******************************* PUT/PATCH(END) *******************************************
 
