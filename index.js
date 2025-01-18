@@ -256,6 +256,22 @@ async function run() {
       const result = await userCollection.updateOne(query, updateDoc);
       res.send(result);
     });
+
+    // update camp data
+    app.put("/camp/:id", verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      const query = { _id: new ObjectId(id) };
+
+      const update = {
+        $set: data,
+      };
+
+      const options = { upsert: true };
+      const result = await campCollection.updateOne(query, update, options);
+      res.send(result);
+    });
+
     // ******************************* PUT/PATCH(END) *******************************************
 
     // ******************************* DELETE(START) *****************************************
