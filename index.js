@@ -4,7 +4,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-
+const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const app = express();
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
@@ -32,6 +32,8 @@ const verifyToken = (req, res, next) => {
     next();
   });
 };
+
+// email send
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.i53p4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -168,6 +170,38 @@ async function run() {
 
       const result = await reviewCollection.insertOne(data);
       res.send(result);
+    });
+
+    // *********NODEMAILER*******
+    app.post("/email", async (req, res) => {
+      // console.log(req.body);
+      const messageData = req.body;
+
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.USER_EMAIL,
+          pass: process.env.USER_PASS,
+        },
+      });
+
+      // Email options
+      const mailOptions = {
+        from: `${messageData.email}`,
+        to: process.env.USER_EMAIL,
+        subject: `New Message from ${messageData.name}`,
+        text: `
+        Name: ${messageData.name}
+        Email: ${messageData.email}
+        Message: ${messageData.message}
+      `,
+      };
+
+      await transporter.sendMail(mailOptions);
+
+      res.send({
+        message: "Message received, We will get back to you shortly! ",
+      });
     });
 
     // ******************************* POST(END) *******************************************
