@@ -254,6 +254,24 @@ async function run() {
       res.send(result);
     });
 
+    // SEARCH SORT for available camps
+    app.get("/available-camps", async (req, res) => {
+      const sort = req.query.sort;
+      let sortOptions = {};
+      if (sort === "count") {
+        sortOptions = { count: -1 }; //highest participants
+      } else if (sort === "camp-fees") {
+        sortOptions = { price: -1 }; //price high to low
+      } else if (sort === "alphabetical") {
+        sortOptions = {
+          campName: 1,
+        };
+      }
+
+      const result = await campCollection.find().sort(sortOptions).toArray();
+      res.send(result);
+    });
+
     //  ********Registration RELATED API*********
 
     // get all registration data
