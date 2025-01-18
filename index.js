@@ -51,6 +51,7 @@ async function run() {
     const campCollection = db.collection("campaigns");
     const registrationCollection = db.collection("registrations");
     const paymentCollection = db.collection("payments");
+    const reviewCollection = db.collection("reviews");
     // ******************************* DB/COLLECTIONS(END) *******************************************
 
     // ******************************* ADMIN MIDDLEWARE(START) *******************************************
@@ -159,6 +160,14 @@ async function run() {
 
       // const totalPrice = data.price * 100; //price in cent's
       // console.log(totalPrice);
+    });
+
+    // *****REVIEWS RELATED API'S*******
+    app.post("/review", verifyToken, async (req, res) => {
+      const data = req.body;
+
+      const result = await reviewCollection.insertOne(data);
+      res.send(result);
     });
 
     // ******************************* POST(END) *******************************************
@@ -279,6 +288,7 @@ async function run() {
     });
 
     //  ********Registration RELATED API*********
+    // update status in both registration collection and payment collection
     app.patch(
       "/registration/:id",
       verifyToken,
