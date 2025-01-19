@@ -12,7 +12,15 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 8000;
 
 // middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://campflow-8fc76.web.app",
+      "https://campflow-8fc76.firebaseapp.com",
+    ],
+  })
+);
 app.use(express.json());
 app.use(morgan("dev"));
 
