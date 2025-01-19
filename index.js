@@ -331,6 +331,63 @@ async function run() {
       const result = await reviewCollection.find().toArray();
       res.send(result);
     });
+
+    // *********ANALYTICS*********
+    app.get("/user-state/:email", async (req, res) => {
+      const email = req.params.email;
+      const registrations = await registrationCollection
+        .aggregate([
+          {
+            $match: { "participant.email": email },
+          },
+          {
+            $group: {
+              _id: "$participant.email", //group id email
+              totalCamps: { $sum: 1 }, // total registered camps
+              // totalSpent: { $sum: "$price" }, // sum of total price in registration by price field
+              totalSpent: {
+                $sum: {
+                  $cond: [
+                    {
+                      $eq: ["$payment_status", "paid"],
+                    },
+                    "$price",
+                    0,
+                  ],
+                },
+              },
+
+              // statusCount: { $push: "$status" },
+              confirmedCount: {
+                $sum: { $cond: [{ $eq: ["$status", "confirmed"] }, 1, 0] },
+              },
+              pendingCount: {
+                $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] },
+              },
+              // paymentStatusCount: { $push: "$payment_status" },
+              Paid: {
+                $sum: {
+                  $cond: [{ $eq: ["$payment_status", "paid"] }, 1, 0],
+                },
+              },
+              unpaid: {
+                $sum: {
+                  $cond: [
+                    {
+                      $eq: ["$payment_status", "pending"],
+                    },
+                    1,
+                    0,
+                  ],
+                },
+              },
+            },
+          },
+        ])
+        .toArray();
+      res.send(registrations[0] || {});
+    });
+
     // ******************************* GET(END) *******************************************
 
     // ******************************* PUT/PATCH(START) *******************************************
