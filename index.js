@@ -333,7 +333,7 @@ async function run() {
     });
 
     // *********ANALYTICS*********
-    app.get("/user-state/:email", async (req, res) => {
+    app.get("/user-stats/:email", async (req, res) => {
       const email = req.params.email;
       const registrations = await registrationCollection
         .aggregate([
