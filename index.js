@@ -310,7 +310,7 @@ async function run() {
       res.send(result);
     });
 
-    // registration data by id
+    // registration data for payment by id
     app.get("/registration/pay/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -333,7 +333,7 @@ async function run() {
     });
 
     // *********ANALYTICS*********
-    app.get("/user-stats/:email", async (req, res) => {
+    app.get("/user-stats/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const registrations = await registrationCollection
         .aggregate([
