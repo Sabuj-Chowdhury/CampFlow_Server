@@ -281,44 +281,49 @@ async function run() {
       res.send(result);
     });
 
-    // SEARCH SORT for available camps
+    // SEARCH SORT
+    // Route to fetch available camps with pagination, search, and sorting
     app.get("/available-camps", async (req, res) => {
       const sort = req.query.sort;
       const search = req.query.search;
-      // console.log(search);
+      const page = parseInt(req.query.page) || 1; // Default to page 1
+      const limit = parseInt(req.query.limit) || 6; // Default to 6 items per page
+      const skip = (page - 1) * limit; // Calculate documents to skip
+
       let sortOptions = {};
       if (sort === "count") {
-        sortOptions = { count: -1 }; //highest participants
+        sortOptions = { count: -1 }; // Sort by most participants
       } else if (sort === "camp-fees") {
-        sortOptions = { price: -1 }; //price high to low
+        sortOptions = { price: -1 }; // Sort by price (high to low)
       } else if (sort === "alphabetical") {
-        sortOptions = {
-          campName: 1, // a-z
+        sortOptions = { campName: 1 }; // Sort alphabetically
+      }
+
+      let query = {};
+      if (search) {
+        query = {
+          $or: [
+            { campName: { $regex: search, $options: "i" } },
+            { professionalName: { $regex: search, $options: "i" } },
+            { location: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } },
+          ],
         };
       }
 
-      let query = {
-        $or: [
-          {
-            campName: { $regex: search, $options: "i" },
-          },
-          {
-            professionalName: { $regex: search, $options: "i" },
-          },
-          {
-            location: { $regex: search, $options: "i" },
-          },
-          {
-            description: { $regex: search, $options: "i" },
-          },
-        ],
-      };
+      // Count total matching documents
+      const total = await campCollection.countDocuments(query);
 
-      const result = await campCollection
+      // Fetch paginated results
+      const camps = await campCollection
         .find(query)
         .sort(sortOptions)
+        .skip(skip)
+        .limit(limit)
         .toArray();
-      res.send(result);
+
+      // Send response with camps and total count
+      res.send({ camps, total });
     });
 
     //  ********Registration RELATED API*********
