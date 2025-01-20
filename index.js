@@ -352,9 +352,34 @@ async function run() {
     // TEMPORARY
     app.get("/registration/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
+      const search = req.query.search;
+
+      const allRegistrations = await registrationCollection
+        .find({ "participant.email": email })
+        .toArray();
+      // console.log(search);
       const query = { "participant.email": email };
-      const result = await registrationCollection.find(query).toArray();
-      res.send(result);
+      if (search) {
+        query.$or = [
+          {
+            camp_name: { $regex: search, $options: "i" },
+          },
+          {
+            payment_status: { $regex: search, $options: "i" },
+          },
+          {
+            status: { $regex: search, $options: "i" },
+          },
+          {
+            "participant.name": { $regex: search, $options: "i" },
+          },
+        ];
+      }
+
+      const myRegistrations = await registrationCollection
+        .find(query)
+        .toArray();
+      res.send({ allRegistrations, myRegistrations });
     });
 
     // registration data for payment by id
