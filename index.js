@@ -323,7 +323,6 @@ async function run() {
 
     //  ********Registration RELATED API*********
 
-    // DONE: include search functionality
     // get all registration data
     app.get("/registrations", verifyToken, verifyAdmin, async (req, res) => {
       const search = req.query.search;
@@ -349,7 +348,7 @@ async function run() {
       res.send(result);
     });
 
-    // TEMPORARY
+    // Registration data for logged in user
     app.get("/registration/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const search = req.query.search;
@@ -390,12 +389,36 @@ async function run() {
       res.send(result);
     });
 
-    // get payment history
+    // get payment history with search
     app.get("/payments/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
+      const search = req.query.search;
+
+      const allPayments = await paymentCollection
+        .find({ "participant.email": email })
+        .toArray();
+
       const query = { "participant.email": email };
-      const result = await paymentCollection.find(query).toArray();
-      res.send(result);
+
+      if (search) {
+        query.$or = [
+          {
+            camp_name: { $regex: search, $options: "i" },
+          },
+          {
+            payment_status: { $regex: search, $options: "i" },
+          },
+          {
+            status: { $regex: search, $options: "i" },
+          },
+          {
+            "participant.name": { $regex: search, $options: "i" },
+          },
+        ];
+      }
+
+      const paymentHistory = await paymentCollection.find(query).toArray();
+      res.send({ allPayments, paymentHistory });
     });
 
     // *******REVIEWS********
