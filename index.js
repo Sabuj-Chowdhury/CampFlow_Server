@@ -307,6 +307,7 @@ async function run() {
             { professionalName: { $regex: search, $options: "i" } },
             { location: { $regex: search, $options: "i" } },
             { description: { $regex: search, $options: "i" } },
+            { date: { $regex: search, $options: "i" } },
           ],
         };
       }
@@ -319,6 +320,7 @@ async function run() {
         .find(query)
         .sort(sortOptions)
         .skip(skip)
+
         .limit(limit)
         .toArray();
 
