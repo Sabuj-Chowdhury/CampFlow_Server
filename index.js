@@ -239,9 +239,28 @@ async function run() {
     });
 
     //  ********CAMP RELATED API*********
+    // *****DONE:Implement search
     // get all camps data
     app.get("/camps", async (req, res) => {
-      const result = await campCollection.find().toArray();
+      const search = req.query.search;
+      // console.log(search);
+      let query = {};
+      if (search) {
+        query = {
+          $or: [
+            {
+              campName: { $regex: search, $options: "i" },
+            },
+            {
+              professionalName: { $regex: search, $options: "i" },
+            },
+            {
+              location: { $regex: search, $options: "i" },
+            },
+          ],
+        };
+      }
+      const result = await campCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -265,7 +284,7 @@ async function run() {
     // SEARCH SORT for available camps
     app.get("/available-camps", async (req, res) => {
       const sort = req.query.sort;
-      // const search = req.query.search;
+      const search = req.query.search;
       // console.log(search);
       let sortOptions = {};
       if (sort === "count") {
@@ -304,7 +323,7 @@ async function run() {
 
     //  ********Registration RELATED API*********
 
-    // TODO: include search functionality
+    // DONE: include search functionality
     // get all registration data
     app.get("/registrations", verifyToken, verifyAdmin, async (req, res) => {
       const search = req.query.search;
