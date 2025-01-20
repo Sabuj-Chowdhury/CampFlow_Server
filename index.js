@@ -248,7 +248,7 @@ async function run() {
     // get popular camps for homepage
     app.get("/camps/popular", async (req, res) => {
       const sort = {
-        count: -1,
+        count: -1, // for highest participation count
       };
       const result = await campCollection.find().sort(sort).limit(6).toArray();
       res.send(result);
@@ -266,6 +266,7 @@ async function run() {
     app.get("/available-camps", async (req, res) => {
       const sort = req.query.sort;
       const search = req.query.search;
+      // console.log(search);
       let sortOptions = {};
       if (sort === "count") {
         sortOptions = { count: -1 }; //highest participants
@@ -277,23 +278,22 @@ async function run() {
         };
       }
 
-      let query = {};
-      if (search) {
-        query = {
-          $or: [
-            {
-              campName: { $regex: search, $options: "i" },
-            },
-            {
-              date: { $regex: search, $options: "i" },
-            },
-            { professionalName: { $regex: search, $options: "i" } },
-            {
-              location: { $regex: search, $options: "i" },
-            },
-          ],
-        };
-      }
+      let query = {
+        $or: [
+          {
+            campName: { $regex: search, $options: "i" },
+          },
+          {
+            professionalName: { $regex: search, $options: "i" },
+          },
+          {
+            location: { $regex: search, $options: "i" },
+          },
+          {
+            description: { $regex: search, $options: "i" },
+          },
+        ],
+      };
 
       const result = await campCollection
         .find(query)
