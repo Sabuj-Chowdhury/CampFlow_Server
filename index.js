@@ -265,7 +265,7 @@ async function run() {
     // SEARCH SORT for available camps
     app.get("/available-camps", async (req, res) => {
       const sort = req.query.sort;
-      const search = req.query.search;
+      // const search = req.query.search;
       // console.log(search);
       let sortOptions = {};
       if (sort === "count") {
@@ -304,9 +304,29 @@ async function run() {
 
     //  ********Registration RELATED API*********
 
+    // TODO: include search functionality
     // get all registration data
     app.get("/registrations", verifyToken, verifyAdmin, async (req, res) => {
-      const result = await registrationCollection.find().toArray();
+      const search = req.query.search;
+      // console.log(search);
+      let query = {};
+      if (search) {
+        query = {
+          $or: [
+            { camp_name: { $regex: search, $options: "i" } },
+            {
+              payment_status: { $regex: search, $options: "i" },
+            },
+            {
+              status: { $regex: search, $options: "i" },
+            },
+            {
+              "participant.name": { $regex: search, $options: "i" },
+            },
+          ],
+        };
+      }
+      const result = await registrationCollection.find(query).toArray();
       res.send(result);
     });
 
