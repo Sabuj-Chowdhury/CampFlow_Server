@@ -291,12 +291,13 @@ async function run() {
       const skip = (page - 1) * limit; // Calculate documents to skip
 
       let sortOptions = {};
-      if (sort === "count") {
-        sortOptions = { count: -1 }; // Sort by most participants
-      } else if (sort === "camp-fees") {
+      // if (sort === "count") {
+      //   sortOptions = { count: -1 }; // Sort by most participants
+      // } else
+      if (sort === "des") {
         sortOptions = { price: -1 }; // Sort by price (high to low)
-      } else if (sort === "alphabetical") {
-        sortOptions = { campName: 1 }; // Sort alphabetically
+      } else if (sort === "asc") {
+        sortOptions = { price: 1 }; // Sort by price (low to high)
       }
 
       let query = {};
