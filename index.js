@@ -435,7 +435,7 @@ async function run() {
       res.send(result);
     });
 
-    // *********ANALYTICS*********
+    // ********* User ANALYTICS*********
     app.get("/user-stats/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const registrations = await registrationCollection
@@ -489,6 +489,45 @@ async function run() {
         ])
         .toArray();
       res.send(registrations[0] || {});
+    });
+
+    // ********* Admin ANALYTICS*********
+    app.get("/admin-stats", verifyToken, verifyAdmin, async (req, res) => {
+      try {
+        const totalCamps = await campCollection.countDocuments(); // Total campaigns
+        const totalUsers = await userCollection.countDocuments(); // Total registered users
+
+        // Total registrations & count of paid/unpaid users
+        const totalRegistrations =
+          await registrationCollection.countDocuments();
+        const paidRegistrations = await registrationCollection.countDocuments({
+          payment_status: "paid",
+        });
+        const unpaidRegistrations = totalRegistrations - paidRegistrations;
+
+        // Total revenue
+        const totalRevenueResult = await paymentCollection
+          .aggregate([
+            { $group: { _id: null, totalRevenue: { $sum: "$price" } } },
+          ])
+          .toArray();
+        const totalRevenue =
+          totalRevenueResult.length > 0
+            ? totalRevenueResult[0].totalRevenue
+            : 0;
+
+        res.json({
+          totalCamps,
+          totalUsers,
+          totalRegistrations,
+          paidRegistrations,
+          unpaidRegistrations,
+          totalRevenue,
+        });
+      } catch (error) {
+        console.error("Error fetching admin stats:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
     });
 
     // ******************************* GET(END) *******************************************
